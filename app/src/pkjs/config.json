@@ -62,7 +62,7 @@
                 "messageKey": "GITHUB_ISSUES_URL",
                 "label": "Feedback GitHub issues URL",
                 "description": "Feedback opens a prefilled issue here. Use your fork's /issues/new URL.",
-                "defaultValue": "https://github.com/tombolger/Betty/issues/new"
+                "defaultValue": "https://github.com/MOS-FETT-LABS/betty/issues/new"
             },
             {
                 "type": "input",

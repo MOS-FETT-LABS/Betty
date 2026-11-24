@@ -73,7 +73,7 @@ exports.getOpenCodeModel = function() {
 }
 
 exports.getGithubIssuesUrl = function() {
-    return exports.getSetting('GITHUB_ISSUES_URL', 'https://github.com/tombolger/Betty/issues/new');
+    return exports.getSetting('GITHUB_ISSUES_URL', 'https://github.com/MOS-FETT-LABS/betty/issues/new');
 }
 
 exports.getFeedbackPostUrl = function() {

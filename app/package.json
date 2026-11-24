@@ -33,7 +33,7 @@
     },
     "companionApp": {
       "android": {
-        "url": "https://github.com/tombolger/Betty",
+        "url": "https://github.com/MOS-FETT-LABS/betty",
         "apps": [
           {
             "package": "com.tombo.billyassistant.companion"

@@ -90,7 +90,7 @@ exports.execute = function(session, call, callback) {
                 session.enqueue({
                     MAP_WIDGET: 1,
                     MAP_WIDGET_IMAGE_ID: imageId,
-                    MAP_WIDGET_USER_LOCATION: 0
+                    MAP_WIDGET_USER_LOCATION: (map.markerX << 16) | map.markerY
                 });
                 callback({
                     status: 'ok',
@@ -129,53 +129,117 @@ function resolveDestination(destination, latitude, longitude, callback) {
     }
     var url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(destination);
     fetchJson(url, function(err, results) {
-        if (err) {
-            callback(new Error('OpenStreetMap geocoding failed: ' + err.message));
-            return;
+        if (!err && results && results.length) {
+            var first = results[0];
+            var lat = parseFloat(first.lat);
+            var lon = parseFloat(first.lon);
+            if (!isNaN(lat) && !isNaN(lon)) {
+                callback(null, {
+                    displayName: first.display_name || destination,
+                    latitude: lat,
+                    longitude: lon
+                });
+                return;
+            }
         }
-        if (!results || !results.length) {
-            callback(new Error('No OpenStreetMap result found for ' + destination + '.'));
-            return;
-        }
-        var first = results[0];
-        var lat = parseFloat(first.lat);
-        var lon = parseFloat(first.lon);
-        if (isNaN(lat) || isNaN(lon)) {
-            callback(new Error('OpenStreetMap result did not include coordinates.'));
-            return;
-        }
-        callback(null, {
-            displayName: first.display_name || destination,
-            latitude: lat,
-            longitude: lon
+        fetchJson('https://photon.komoot.io/api?limit=1&q=' + encodeURIComponent(destination), function(photonErr, data) {
+            if (photonErr) {
+                callback(err || photonErr);
+                return;
+            }
+            var feature = data && data.features && data.features[0];
+            if (!feature) {
+                callback(err || new Error('No OpenStreetMap result found for ' + destination + '.'));
+                return;
+            }
+            var coords = feature.geometry && feature.geometry.coordinates;
+            callback(null, {
+                displayName: (feature.properties && feature.properties.name) || destination,
+                latitude: coords ? coords[1] : NaN,
+                longitude: coords ? coords[0] : NaN
+            });
         });
     });
 }
 
 function fetchStaticMap(place, callback) {
     var size = getWatchMapSize();
-    var markers = place.latitude + ',' + place.longitude + ',red-pushpin';
-    var url = 'https://staticmap.openstreetmap.de/staticmap.php' +
-        '?center=' + encodeURIComponent(place.latitude + ',' + place.longitude) +
-        '&zoom=13' +
-        '&size=' + encodeURIComponent(size.width + 'x' + size.height) +
-        '&maptype=mapnik' +
-        '&markers=' + encodeURIComponent(markers);
-    if (location.isReady()) {
-        var pos = location.getPos();
-        url += '&mlat0=' + encodeURIComponent(pos.lat) + '&mlon0=' + encodeURIComponent(pos.lon);
-    }
-    fetchBytes(url, function(err, bytes) {
+    var zoom = 15;
+    var n = Math.pow(2, zoom);
+    var xFrac = (place.longitude + 180) / 360;
+    var latRad = place.latitude * Math.PI / 180;
+    var yFrac = (1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2;
+    var tileX = Math.floor(xFrac * n);
+    var tileY = Math.floor(yFrac * n);
+    var destX = Math.round((xFrac * n - tileX) * 256);
+    var destY = Math.round((yFrac * n - tileY) * 256);
+    var url = 'https://tile.openstreetmap.org/' + zoom + '/' + tileX + '/' + tileY + '.png';
+    fetchBytes(url, function(err, tile) {
         if (err) {
             callback(new Error('OpenStreetMap image failed: ' + err.message));
             return;
         }
-        callback(null, {
-            width: size.width,
-            height: size.height,
-            bytes: bytes
+        cropTile(tile, size, destX, destY, function(cropErr, cropped) {
+            var result = cropped || {
+                width: 256,
+                height: 256,
+                bytes: tile,
+                markerX: Math.max(0, Math.min(255, destX)),
+                markerY: Math.max(0, Math.min(255, destY))
+            };
+            callback(null, result);
         });
     });
+}
+
+function cropTile(bytes, size, destX, destY, callback) {
+    var hasDom = typeof document !== 'undefined' &&
+        typeof Image !== 'undefined' &&
+        typeof document.createElement === 'function';
+    if (!hasDom) {
+        callback(null, null);
+        return;
+    }
+    try {
+        var blob = new Blob([new Uint8Array(bytes)]);
+        var url = URL.createObjectURL(blob);
+        var img = new Image();
+        img.onload = function() {
+            URL.revokeObjectURL(url);
+            try {
+                var left = destX - Math.floor(size.width / 2);
+                var top = destY - Math.floor(size.height / 2);
+                left = Math.max(0, Math.min(256 - size.width, left));
+                top = Math.max(0, Math.min(256 - size.height, top));
+                var canvas = document.createElement('canvas');
+                canvas.width = size.width;
+                canvas.height = size.height;
+                canvas.getContext('2d').drawImage(img, left, top, size.width, size.height, 0, 0, size.width, size.height);
+                var dataUrl = canvas.toDataURL('image/png');
+                var raw = atob(dataUrl.substring(dataUrl.indexOf(',') + 1));
+                var out = new Array(raw.length);
+                for (var i = 0; i < raw.length; i++) {
+                    out[i] = raw.charCodeAt(i) & 0xff;
+                }
+                callback(null, {
+                    width: size.width,
+                    height: size.height,
+                    bytes: out,
+                    markerX: destX - left,
+                    markerY: destY - top
+                });
+            } catch (e) {
+                callback(null, null);
+            }
+        };
+        img.onerror = function() {
+            URL.revokeObjectURL(url);
+            callback(null, null);
+        };
+        img.src = url;
+    } catch (e) {
+        callback(null, null);
+    }
 }
 
 function fetchJson(url, callback) {

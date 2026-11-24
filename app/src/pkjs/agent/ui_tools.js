@@ -8,6 +8,7 @@
 var messageKeys = require('message_keys');
 var osmMapTool = require('./osm_map_tool');
 var weatherTool = require('./weather_tool');
+var webImageTool = require('./web_image_tool');
 
 function schema(properties, required) {
     return {
@@ -43,7 +44,7 @@ exports.getDeclarations = function() {
             options: arraySchema('Two to four short answer option labels, each ' + optionMax + ' characters or fewer.'),
             context: stringSchema('The original user request or enough hidden context to continue after the user chooses.')
         }, ['question', 'options'])
-    }].concat(osmMapTool.getDeclarations()).concat(weatherTool.getDeclarations());
+    }].concat(osmMapTool.getDeclarations()).concat(weatherTool.getDeclarations()).concat(webImageTool.getDeclarations());
 };
 
 exports.execute = function(session, call, callback) {
@@ -51,6 +52,9 @@ exports.execute = function(session, call, callback) {
         return true;
     }
     if (osmMapTool.execute(session, call, callback)) {
+        return true;
+    }
+    if (webImageTool.execute(session, call, callback)) {
         return true;
     }
     if (call.name !== 'ask_clarifying_question') {
