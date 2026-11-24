@@ -51,7 +51,7 @@ import java.util.TimeZone
 class CompanionAgent(
     private val context: Context,
     private val settingsStore: SettingsStore = SettingsStore(context),
-    private val geminiClient: GeminiClient = GeminiClient(),
+    private val geminiClient: AssistantClient = OpenCodeClient(),
     private val watchMediaSpec: WatchMediaSpec = WatchMediaSpec.Default,
     calendarTools: AndroidCalendarTools = AndroidCalendarTools(context),
     private val threadId: String? = null,

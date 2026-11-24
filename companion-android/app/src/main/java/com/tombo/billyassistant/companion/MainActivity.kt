@@ -23,7 +23,8 @@ import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import com.tombo.billyassistant.companion.agent.GeminiClient
+import com.tombo.billyassistant.companion.agent.AssistantClient
+import com.tombo.billyassistant.companion.agent.OpenCodeClient
 import com.tombo.billyassistant.companion.agent.GeminiKeyTestResult
 import com.tombo.billyassistant.companion.auth.GoogleApiAuthorization
 import com.tombo.billyassistant.companion.auth.GoogleApiAuthorizationResult
@@ -510,7 +511,7 @@ class MainActivity : ComponentActivity() {
         apiKeyStateText.text = "Verifying Gemini key..."
         apiKeyStateText.setTextColor(COLOR_MUTED)
         Thread {
-            val result = GeminiClient().testKey(settings.geminiApiKey)
+            val result = OpenCodeClient().testKey(settings.geminiApiKey)
             runOnUiThread {
                 apiKeyStateText.text = when (result) {
                     is GeminiKeyTestResult.Passed -> "${result.message} Stored locally."

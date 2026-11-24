@@ -12,7 +12,8 @@ import android.graphics.Rect
 import android.os.Build
 import android.util.Base64
 import android.util.Size
-import com.tombo.billyassistant.companion.agent.GeminiClient
+import com.tombo.billyassistant.companion.agent.AssistantClient
+import com.tombo.billyassistant.companion.agent.OpenCodeClient
 import com.tombo.billyassistant.companion.agent.GeminiImageCandidate
 import com.tombo.billyassistant.companion.agent.GeminiImageChoice
 import com.tombo.billyassistant.companion.media.AndroidPhotoTools
@@ -32,7 +33,7 @@ import java.time.format.DateTimeFormatter
 class PhotoCompanionTool(
     private val context: Context,
     private val watchMediaSpec: WatchMediaSpec = WatchMediaSpec.Default,
-    private val geminiClient: GeminiClient? = null,
+    private val geminiClient: AssistantClient? = null,
     private val apiKeyProvider: () -> String = { "" },
 ) : CompanionTool {
     override val declarations: List<JSONObject> = listOf(

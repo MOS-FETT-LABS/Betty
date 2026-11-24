@@ -4,7 +4,7 @@ import com.tombo.billyassistant.companion.settings.SettingsStore
 
 class AgentRuntime(
     private val settingsStore: SettingsStore,
-    private val geminiClient: GeminiClient,
+    private val geminiClient: AssistantClient,
 ) {
     fun describeStatus(): String {
         val settings = settingsStore.load()
@@ -24,7 +24,7 @@ class AgentRuntime(
             return AgentRuntimeResult.Rejected("Prompt is blank.")
         }
         if (settings.geminiApiKey.isBlank()) {
-            return AgentRuntimeResult.NotReady("Configure a Gemini API key first.")
+            return AgentRuntimeResult.NotReady("Configure an OpenCode Go API key first.")
         }
 
         return AgentRuntimeResult.Prepared(
