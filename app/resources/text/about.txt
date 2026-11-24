@@ -1,0 +1,13 @@
+# Betty
+## Version %d.%d
+A local AI assistant for Pebble, powered by your own OpenCode Go key.
+Uses your OpenCode Go API key. No Betty helper service.
+Android enhanced mode is optional when available.
+
+## Programming
+Thomas Bolger
+Katharine Berry
+Betty fork: Ashley Cooper
+## Iconography
+Sarah Bolger
+Stasia Michalska <lcp.world>

@@ -1,0 +1,11 @@
+Betty — a voice AI assistant for the Pebble smartwatch
+Copyright 2026 Ashley Cooper
+
+This project is a fork of Billy by Thomas Bolger
+(https://github.com/TomBolger/Billy), which is in turn a fork of the open
+source Bobby assistant by Katharine Berry / Rebble
+(https://github.com/pebble-dev/bobby-assistant).
+
+All code in this fork is licensed under the Apache License, Version 2.0
+(see LICENSE), as are Billy and Bobby. Portions Copyright 2025 Google LLC
+(Bobby's original license headers are retained in the files they apply to).

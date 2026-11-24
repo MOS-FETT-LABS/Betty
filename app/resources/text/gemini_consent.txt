@@ -1,0 +1,1 @@
+Betty uses the OpenCode API key you configure. Your prompts are sent from your phone to opencode.ai, not to a Betty-hosted helper service. Android enhanced mode, if enabled, may process requests through the Android companion. If you do not agree, you cannot use Betty.
