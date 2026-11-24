@@ -193,3 +193,14 @@ change one options list in `config.json`.
   testing, quota screen semantics for OpenCode (still shows local estimate;
   swap to `/v1/usage` later), PDC animations still pony (M3), feedback URLs
   still tombolger placeholders (M6).
+- **2026-11-24 (session 2) — M2 essentially done.** Brick SDK provisioned
+  (pebble-tool v5.3 + SDK 4.44 from sdk.repebble.com + node 22 user-space +
+  cmake/ninja in the SDK venv; the classic-SDK python2.7 path was a dead end —
+  artifacts of it live in `/root/.trash` and on the Brick at
+  `~/.local/python2.7`, `~/sdk`, removable whenever). Key discoveries:
+  Billy's CMakeLists.txt is IDE-only → build with `PEBBLE_USE_WAF=1`; new
+  `sdkVersion: 3` projects are manifest v2 → added `usesPermissions`
+  (Internet, Location, Timeline, WatchMicrophone) or pkjs networking is
+  blocked. **First Betty `.pbw` built clean (1.19 MB, emery) and pushed to the
+  sandbox** (`/sdcard/OPENCODESANDBOX/PEBBLEDEV/betty/app.pbw`). Remaining:
+  sideload + live test with a real OpenCode key, then M3+.

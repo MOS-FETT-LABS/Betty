@@ -14,6 +14,12 @@
     "displayName": "Betty",
     "uuid": "6824f333-cfe7-4224-bd03-712dc0d227e9",
     "sdkVersion": "3",
+    "usesPermissions": [
+      "Internet",
+      "Location",
+      "Timeline",
+      "WatchMicrophone"
+    ],
     "enableMultiJS": true,
     "capabilities": [
       "configurable",
