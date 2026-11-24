@@ -47,6 +47,11 @@ MessageLayer* message_layer_create(GRect rect, ConversationEntry* entry) {
     EntryType type = conversation_entry_get_type(entry);
     if (type == EntryTypePrompt) {
       text_layer_set_text(data->speaker_layer, "You");
+      text_layer_set_background_color(data->speaker_layer, GColorFashionMagenta);
+      text_layer_set_text_color(data->speaker_layer, GColorWhite);
+      GSize speaker_size = text_layer_get_content_size(data->speaker_layer);
+      layer_set_frame(text_layer_get_layer(data->speaker_layer),
+          GRect(5, 0, speaker_size.w + 8, speaker_size.h + 2));
       content_origin_y = fonts->small_font_cap * 1.75;
     }
     data->rich_content = type == EntryTypeResponse;

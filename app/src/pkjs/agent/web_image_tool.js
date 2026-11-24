@@ -13,6 +13,8 @@
 var imageManager = require('../lib/image_transfer').sharedManager;
 
 var MAX_DIM = 190;
+var CARD_HEIGHT = 138;
+var THUMB_REQUEST_WIDTH = 640;
 var TIMEOUT_MS = 10000;
 
 exports.getDeclarations = function() {
@@ -71,7 +73,7 @@ function searchCommons(query, callback) {
     var url = 'https://commons.wikimedia.org/w/api.php' +
         '?action=query&generator=search&gsrnamespace=6&gsrlimit=10&gsrsearch=' +
         encodeURIComponent(query) +
-        '&prop=imageinfo&iiprop=url%7Cmime%7Csize&iiurlwidth=' + (MAX_DIM * 2) + '&format=json';
+        '&prop=imageinfo&iiprop=url%7Cmime%7Csize&iiurlwidth=' + THUMB_REQUEST_WIDTH + '&format=json';
     fetchJson(url, function(err, root) {
         if (err) {
             callback(err, null);
@@ -120,36 +122,49 @@ function sendFirstUsableImage(session, results, callback) {
     });
     var queue = pngOnly.concat(others);
     var index = 0;
+    var lastError = null;
     function next() {
         if (index >= queue.length) {
-            callback(new Error('no image could be decoded'), null);
+            callback(lastError || new Error('no image could be decoded'), null);
             return;
         }
         var candidate = queue[index++];
+        var fitted = scaledDimensions(candidate);
+        var targetUrl = candidate.imageUrl;
+        if (candidate.mime === 'image/png' && fitted.thumbResized) {
+            targetUrl = resizedThumbUrl(candidate.imageUrl, fitted.width);
+        }
         session.handleMessage({data: 'fFetching image'});
-        fetchBytes(candidate.imageUrl, function(err, bytes) {
+        fetchBytes(targetUrl, function(err, bytes) {
             if (err) {
+                lastError = err;
                 next();
                 return;
             }
             if (candidate.mime === 'image/png') {
-                show(session, candidate, bytes, callback);
+                show(session, candidate, fitted, bytes, callback);
                 return;
             }
+            session.handleMessage({data: 'fConverting image'});
             convertToPng(bytes, function(convErr, pngBytes) {
                 if (convErr || !pngBytes) {
+                    lastError = convErr || new Error('conversion failed');
                     next();
                     return;
                 }
-                show(session, candidate, pngBytes, callback);
+                show(session, candidate, {width: 0, height: 0}, pngBytes, callback);
             });
         });
     }
     next();
 }
 
-function show(session, candidate, bytes, callback) {
-    var dims = scaledDimensions(candidate.width, candidate.height, bytes);
+function resizedThumbUrl(url, width) {
+    return url.replace(/\/(\d+)px-/, '/' + width + 'px-');
+}
+
+function show(session, candidate, fitted, bytes, callback) {
+    var dims = (fitted.width > 0 && fitted.height > 0) ? fitted : (measurePng(bytes) || {width: 190, height: 138});
     var imageId = imageManager.sendImage(dims.width, dims.height, bytes);
     setTimeout(function() {
         session.enqueue({
@@ -164,23 +179,38 @@ function show(session, candidate, bytes, callback) {
     }, 120);
 }
 
-function scaledDimensions(width, height, bytes) {
-    if (typeof height === 'number' && typeof width === 'number' && width > 0 && height > 0) {
-        var scale = Math.min(1, MAX_DIM / Math.max(width, height));
+function scaledDimensions(candidate) {
+    var width = Number(candidate.width) || 0;
+    var height = Number(candidate.height) || 0;
+    if (width > 0 && height > 0) {
+        var scale = Math.min(MAX_DIM / width, CARD_HEIGHT / height, 1);
         return {
             width: Math.max(1, Math.round(width * scale)),
-            height: Math.max(1, Math.round(height * scale))
+            height: Math.max(1, Math.round(height * scale)),
+            thumbResized: Math.round(width * scale) < Math.round(width)
         };
     }
-    return {width: MAX_DIM, height: Math.round(MAX_DIM * 0.75)};
+    return {width: MAX_DIM, height: Math.round(MAX_DIM * 0.7), thumbResized: false};
 }
+
+function measurePng(bytes) {
+    if (bytes.length > 24 && bytes[0] === 0x89 && bytes[1] === 0x50) {
+        var width = (bytes[16] << 24 | bytes[17] << 16 | bytes[18] << 8 | bytes[19]) >>> 0;
+        var height = (bytes[20] << 24 | bytes[21] << 16 | bytes[22] << 8 | bytes[23]) >>> 0;
+        if (width > 0 && height > 0) {
+            return {width: width, height: height};
+        }
+    }
+    return null;
+}
+
 
 function convertToPng(bytes, callback) {
     var hasDom = typeof document !== 'undefined' &&
         typeof Image !== 'undefined' &&
         typeof document.createElement === 'function';
     if (!hasDom) {
-        callback(new Error('this image format needs the Android Pebble app'), null);
+        callback(new Error('no canvas in this JS runtime (needs Android Pebble app)'), null);
         return;
     }
     try {
@@ -190,7 +220,7 @@ function convertToPng(bytes, callback) {
         img.onload = function() {
             URL.revokeObjectURL(url);
             try {
-                var scale = Math.min(1, MAX_DIM / Math.max(img.width, img.height));
+                var scale = Math.min(MAX_DIM / Math.max(img.width, img.height), CARD_HEIGHT / Math.max(1, img.height), 1);
                 var canvas = document.createElement('canvas');
                 canvas.width = Math.max(1, Math.round(img.width * scale));
                 canvas.height = Math.max(1, Math.round(img.height * scale));

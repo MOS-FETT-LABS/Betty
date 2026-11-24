@@ -85,6 +85,11 @@ SegmentLayer* segment_layer_create(GRect rect, ConversationEntry* entry, bool as
     text_layer_set_font(data->assistant_label_layer, fonts->small_font);
     layer_add_child(layer, text_layer_get_layer(data->assistant_label_layer));
     text_layer_set_text(data->assistant_label_layer, "Betty");
+    text_layer_set_background_color(data->assistant_label_layer, GColorCobaltBlue);
+    text_layer_set_text_color(data->assistant_label_layer, GColorWhite);
+    GSize label_size = text_layer_get_content_size(data->assistant_label_layer);
+    layer_set_frame(text_layer_get_layer(data->assistant_label_layer),
+        GRect(5, 0, label_size.w + 8, label_size.h + 2));
     child_frame = GRect(0, fonts->small_font_cap * 2.25, rect.size.w, rect.size.h - fonts->small_font_cap * 2.25);
   } else {
     data->assistant_label_layer = NULL;

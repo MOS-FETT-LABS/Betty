@@ -180,14 +180,11 @@ function fetchStaticMap(place, callback) {
             return;
         }
         cropTile(tile, size, destX, destY, function(cropErr, cropped) {
-            var result = cropped || {
-                width: 256,
-                height: 256,
-                bytes: tile,
-                markerX: Math.max(0, Math.min(255, destX)),
-                markerY: Math.max(0, Math.min(255, destY))
-            };
-            callback(null, result);
+            if (cropErr || !cropped) {
+                callback(cropErr || new Error('map image could not be cropped (canvas unavailable)'));
+                return;
+            }
+            callback(null, cropped);
         });
     });
 }
@@ -197,7 +194,7 @@ function cropTile(bytes, size, destX, destY, callback) {
         typeof Image !== 'undefined' &&
         typeof document.createElement === 'function';
     if (!hasDom) {
-        callback(null, null);
+        callback(new Error('no canvas in this JS runtime (needs Android Pebble app)'), null);
         return;
     }
     try {
@@ -234,11 +231,11 @@ function cropTile(bytes, size, destX, destY, callback) {
         };
         img.onerror = function() {
             URL.revokeObjectURL(url);
-            callback(null, null);
+            callback(new Error('tile image decode failed'), null);
         };
         img.src = url;
     } catch (e) {
-        callback(null, null);
+        callback(e, null);
     }
 }
 
