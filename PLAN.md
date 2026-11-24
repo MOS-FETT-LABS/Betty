@@ -204,3 +204,25 @@ change one options list in `config.json`.
   blocked. **First Betty `.pbw` built clean (1.19 MB, emery) and pushed to the
   sandbox** (`/sdcard/OPENCODESANDBOX/PEBBLEDEV/betty/app.pbw`). Remaining:
   sideload + live test with a real OpenCode key, then M3+.
+- **2026-11-24 (session 3) — M4 phase 1 done; app live on the watch.** Published
+  to GitHub (MOS-FETT-LABS/Betty, deploy key on the Brick, `tools/publish-betty.sh`).
+  On-device feedback drove: curated model select, `search_tool.js` web search,
+  `web_image_tool.js` (Commons → exact-size thumbs; JPEG conversion needs
+  canvas in the host PKJS runtime — surface errors loudly), OSM tile maps
+  (staticmap.openstreetmap.de is DEAD — live tiles + canvas crop + marker),
+  transparent betta raster art, "You"/"Betty" speaker label pills
+  (FashionMagenta/CobaltBlue), "Ask me anything!" idle tip, fixed label spacing
+  (content_size returns 0 pre-layout — use font metrics). **Companion built:**
+  Android SDK provisioned on the Brick (JDK 17 temurin + cmdline tools +
+  platform-36, `tools/brick/pebbledev-setup-android.sh`), OpenCodeClient.kt
+  full port behind the AssistantClient interface, APK assembles on the Brick
+  (now part of `build-on-brick.sh`). **Identity unlinked from Billy:** package
+  `com.mosfettlabs.bettycompanion`, watchapp UUID everywhere including the
+  companion's PebbleListener filter (Billy's UUID in the companion was the
+  endless-loading root cause — it nacked every Betty prompt), debug keystore
+  committed. **Companion mostly working** end-to-end on device. Open: Google
+  OAuth needs the user's own GCP OAuth Android client (package + SHA-1
+  4B:0A:07:9A:84:87:F9:E3:77:72:0B:15:94:99:54:2A:E0:49:03:95) plus consent
+  screen test-user/branding config (403 access_denied = consent policy, not
+  code); pkjs image path still depends on canvas availability in the CoreApp
+  JS runtime; image/map polish; PDC animations still pony (M3).
