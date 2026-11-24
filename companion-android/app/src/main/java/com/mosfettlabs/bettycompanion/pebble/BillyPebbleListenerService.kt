@@ -124,7 +124,7 @@ class BillyPebbleListenerService : BasePebbleListenerService() {
     }
 
     companion object {
-        private const val TAG = "BillyPebbleListener"
+        private const val TAG = "BettyPebbleListener"
         private const val RUNTIME_AUTOMATIC = "automatic"
         private const val RUNTIME_COMPANIONLESS = "companionless"
         private const val REMOTE_TIMEOUT_MS = 45_000L
@@ -357,7 +357,7 @@ private fun String?.toWatchMediaSpec(): WatchMediaSpec {
 }
 
 object BillyPebbleProtocol {
-    val APP_UUID: UUID = UUID.fromString("f74b42bb-3473-444f-9722-dd34136d9b02")
+    val APP_UUID: UUID = UUID.fromString("6824f333-cfe7-4224-bd03-712dc0d227e9")
     const val CHAT_CHUNK_LENGTH = 80
     const val IMAGE_CHUNK_LENGTH = 500
     const val IMAGE_CHUNK_START_DELAY_MS = 75L
