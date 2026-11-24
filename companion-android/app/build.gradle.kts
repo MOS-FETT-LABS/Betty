@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.tombo.billyassistant.companion"
+    namespace = "com.mosfettlabs.bettycompanion"
     compileSdk = 36
 
     signingConfigs {
@@ -20,7 +20,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.tombo.billyassistant.companion"
+        applicationId = "com.mosfettlabs.bettycompanion"
         minSdk = 26
         targetSdk = 36
         versionCode = 63

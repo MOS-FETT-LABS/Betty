@@ -33,10 +33,10 @@
     },
     "companionApp": {
       "android": {
-        "url": "https://github.com/MOS-FETT-LABS/betty",
+        "url": "https://github.com/MOS-FETT-LABS/Betty",
         "apps": [
           {
-            "package": "com.tombo.billyassistant.companion"
+            "package": "com.mosfettlabs.bettycompanion"
           }
         ]
       }
