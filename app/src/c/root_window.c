@@ -128,7 +128,7 @@ static void prv_window_appear(Window* window) {
   rw->talking_horse_overridden = false;
   if (version_is_updated() || rand() < RAND_MAX / 10) {
     rw->talking_horse_overridden = true;
-    talking_horse_layer_set_text(rw->talking_horse_layer, "Try holding select in chat!");
+    talking_horse_layer_set_text(rw->talking_horse_layer, "Ask me anything!");
   }
 
   VersionInfo version_info = version_get_current();
