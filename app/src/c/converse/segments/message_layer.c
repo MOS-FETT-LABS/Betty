@@ -34,7 +34,6 @@ typedef struct {
 
 static char *prv_get_content_text(MessageLayer *layer);
 static int prv_get_content_height(MessageLayer* layer);
-static uint16_t prv_get_speaker_label_height(MessageLayerData* data);
 static void prv_rich_content_update(Layer *content_layer, GContext *ctx);
 static int prv_rich_layout(MessageLayer *layer, GContext *ctx);
 
@@ -50,10 +49,9 @@ MessageLayer* message_layer_create(GRect rect, ConversationEntry* entry) {
       text_layer_set_text(data->speaker_layer, "You");
       text_layer_set_background_color(data->speaker_layer, GColorFashionMagenta);
       text_layer_set_text_color(data->speaker_layer, GColorWhite);
-      GSize speaker_size = text_layer_get_content_size(data->speaker_layer);
       layer_set_frame(text_layer_get_layer(data->speaker_layer),
-          GRect(5, 0, speaker_size.w + 8, speaker_size.h + 2));
-      content_origin_y = prv_get_speaker_label_height(data) + 3;
+          GRect(5, 0, rect.size.w, fonts->small_font_cap * 2.25));
+      content_origin_y = fonts->small_font_cap * 2.25 + 4;
     }
     data->rich_content = type == EntryTypeResponse;
     text_layer_set_font(data->speaker_layer, fonts->small_font);
@@ -102,16 +100,11 @@ void message_layer_update(MessageLayer* layer) {
   GRect frame = layer_get_frame(layer);
   frame.size.h = data->content_height + 5;
   if (conversation_entry_get_type(data->entry) == EntryTypePrompt) {
-    frame.size.h += prv_get_speaker_label_height(data) + 3;
+    frame.size.h += fonts_get_config()->small_font_cap * 2.25 + 4;
   }
   layer_set_frame(data->content_layer, GRect(5, layer_get_frame(data->content_layer).origin.y, width - 10, data->content_height + 5));
   layer_mark_dirty(data->content_layer);
   layer_set_frame(layer, frame);
-}
-
-static uint16_t prv_get_speaker_label_height(MessageLayerData* data) {
-  GSize speaker_size = text_layer_get_content_size(data->speaker_layer);
-  return speaker_size.h + 2;
 }
 
 static char *prv_get_content_text(MessageLayer *layer) {
