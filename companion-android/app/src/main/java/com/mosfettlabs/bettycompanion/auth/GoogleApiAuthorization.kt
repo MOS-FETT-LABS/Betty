@@ -16,15 +16,26 @@ class GoogleApiAuthorization(private val activity: Activity) {
         scopes: Collection<String>,
         onResult: (GoogleApiAuthorizationResult) -> Unit,
     ) {
+        requestAccess(scopes, "", onResult)
+    }
+
+    fun requestAccess(
+        scopes: Collection<String>,
+        serverClientId: String,
+        onResult: (GoogleApiAuthorizationResult) -> Unit,
+    ) {
         val normalizedScopes = scopes.map { it.trim() }.filter { it.isNotBlank() }.distinct()
         if (normalizedScopes.isEmpty()) {
             onResult(GoogleApiAuthorizationResult.Failed("No Google OAuth scopes were requested."))
             return
         }
 
-        val request = AuthorizationRequest.builder()
+        val builder = AuthorizationRequest.builder()
             .setRequestedScopes(normalizedScopes.map(::Scope))
-            .build()
+        if (serverClientId.isNotBlank()) {
+            builder.setServerClientId(serverClientId.trim())
+        }
+        val request = builder.build()
 
         authorizationClient.authorize(request)
             .addOnSuccessListener { result -> onResult(result.toGoogleApiAuthorizationResult()) }

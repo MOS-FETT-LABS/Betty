@@ -68,6 +68,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var apiKeyInput: EditText
     private lateinit var apiKeyStateText: TextView
     private lateinit var mapsApiKeyInput: EditText
+    private lateinit var googleClientIdInput: EditText
     private lateinit var mapsKeyStateText: TextView
     private lateinit var bridgeStateText: TextView
     private lateinit var calendarPermissionRow: LinearLayout
@@ -236,6 +237,22 @@ class MainActivity : ComponentActivity() {
             addView(mapsApiKeyInput, matchWrap())
             mapsKeyStateText = muted("")
             addView(mapsKeyStateText)
+            addView(spacer(14))
+            addView(apiKeyLabel("Google OAuth client ID"))
+            googleClientIdInput = EditText(this@MainActivity).apply {
+                hint = "Optional web client id (....apps.googleusercontent.com)"
+                textSize = 16f
+                minLines = 2
+                maxLines = 4
+                isSingleLine = false
+                setHorizontallyScrolling(false)
+                inputType = InputType.TYPE_CLASS_TEXT
+                setTextColor(COLOR_TEXT)
+                setHintTextColor(COLOR_MUTED)
+                setPadding(dp(12), dp(10), dp(12), dp(10))
+                background = rounded(COLOR_FIELD, dp(10).toFloat(), COLOR_STROKE)
+            }
+            addView(googleClientIdInput, matchWrap())
             addView(horizontalActions().apply {
                 addView(actionButton("Save keys") {
                     settingsStore.save(readSettingsFromForm())
@@ -377,12 +394,14 @@ class MainActivity : ComponentActivity() {
     private fun renderSettings(settings: CompanionSettings) {
         apiKeyInput.setText(settings.geminiApiKey)
         mapsApiKeyInput.setText(settings.googleMapsApiKey)
+        googleClientIdInput.setText(settings.googleClientId)
     }
 
     private fun readSettingsFromForm(): CompanionSettings {
         return CompanionSettings(
             geminiApiKey = apiKeyInput.text.toString(),
             googleMapsApiKey = mapsApiKeyInput.text.toString(),
+            googleClientId = googleClientIdInput.text.toString(),
             pebbleBridgeEnabled = true,
         )
     }
@@ -869,7 +888,7 @@ class MainActivity : ComponentActivity() {
         pendingGoogleScopes = scopes
         googleApiAccessState = "requesting access..."
         renderStatus()
-        googleApiAuthorization.requestAccess(scopes) { result ->
+        googleApiAuthorization.requestAccess(scopes, settingsStore.load().googleClientId) { result ->
             runOnUiThread {
                 handleGoogleAuthorizationResult(result, allowConsentUi = true)
             }
